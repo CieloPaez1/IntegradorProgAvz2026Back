@@ -1,8 +1,12 @@
 package model;
 
-import exception.TaskException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import project.model.Project;
+import project.enums.ProjectStatus;
+import exception.ValidationException;
+import task.enums.TaskStatus;
+import task.model.Task;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -11,27 +15,33 @@ import java.time.ZoneOffset;
 
 public class TaskTest {
 
-    Clock fixedClock = Clock.fixed(
-            LocalDateTime.of(2025, 11, 11, 10, 0).toInstant(ZoneOffset.UTC),
+    private final Clock fixedClock = Clock.fixed(
+            LocalDateTime.now().plusMonths(1)
+                    .toInstant(ZoneOffset.UTC),
             ZoneOffset.UTC
     );
 
-    @Test
-    public void FactoryTrue() {
-        Project project = Project.create(
+    private Project buildProject() {
+        return Project.create(
                 "Website Redesign",
-                LocalDate.of(2025, 10, 1),
-                LocalDate.of(2025, 12, 1),
+                LocalDate.now(),
+                LocalDate.now().plusMonths(3),
                 ProjectStatus.ACTIVE,
-                "Corporate website redesign"
+                null
         );
+    }
+
+    @Test
+    void shouldCreateTaskSuccessfully() {
+
+        Project project = buildProject();
 
         Task task = Task.create(
                 project,
                 "Design landing page",
                 5,
                 "John Doe",
-                TaskStatus.ACTIVE,
+                TaskStatus.TODO,
                 fixedClock
         );
 
@@ -40,37 +50,97 @@ public class TaskTest {
         Assertions.assertEquals("Design landing page", task.getTitle());
         Assertions.assertEquals(5, task.getEstimateHours());
         Assertions.assertEquals("John Doe", task.getAssignee());
-        Assertions.assertEquals(TaskStatus.ACTIVE, task.getStatus());
+        Assertions.assertEquals(TaskStatus.TODO, task.getStatus());
         Assertions.assertNotNull(task.getCreatedAt());
         Assertions.assertNull(task.getFinishedAt());
     }
 
     @Test
-    public void FactoryFalse() {
-        Project project = Project.create(
-                "Website Redesign",
-                LocalDate.of(2025, 10, 1),
-                LocalDate.of(2025, 12, 1),
-                ProjectStatus.ACTIVE,
-                "Corporate website redesign"
+    void shouldThrowExceptionWhenProjectIsNull() {
+
+        Assertions.assertThrows(
+                ValidationException.class,
+                () -> Task.create(
+                        null,
+                        "Task Title",
+                        5,
+                        "John Doe",
+                        TaskStatus.TODO,
+                        fixedClock
+                )
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenTitleIsBlank() {
+
+        Project project = buildProject();
+
+        Assertions.assertThrows(
+                ValidationException.class,
+                () -> Task.create(
+                        project,
+                        "",
+                        5,
+                        "John Doe",
+                        TaskStatus.TODO,
+                        fixedClock
+                )
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenEstimateHoursIsZero() {
+
+        Project project = buildProject();
+
+        Assertions.assertThrows(
+                ValidationException.class,
+                () -> Task.create(
+                        project,
+                        "Task Title",
+                        0,
+                        "John Doe",
+                        TaskStatus.TODO,
+                        fixedClock
+                )
+        );
+    }
+
+    @Test
+    void shouldSetFinishedAtWhenStatusIsDone() {
+
+        Project project = buildProject();
+
+        LocalDateTime expectedFinishedAt = LocalDateTime.now(fixedClock);
+
+        Task task = Task.create(
+                project,
+                "Deploy app",
+                4,
+                "alice",
+                TaskStatus.DONE,
+                fixedClock
         );
 
-        Assertions.assertThrows(TaskException.class, () ->
-                Task.create(null, "Task Title", 5, "John Doe", TaskStatus.ACTIVE, fixedClock));
+        Assertions.assertNotNull(task.getFinishedAt());
+        Assertions.assertEquals(expectedFinishedAt, task.getFinishedAt());
+    }
 
-        Assertions.assertThrows(TaskException.class, () ->
-                Task.create(project, null, 5, "John Doe", TaskStatus.ACTIVE, fixedClock));
+    @Test
+    void shouldNotSetFinishedAtWhenStatusIsNotDone() {
 
-        Assertions.assertThrows(TaskException.class, () ->
-                Task.create(project, "", 5, "John Doe", TaskStatus.ACTIVE, fixedClock));
+        Project project = buildProject();
 
-        Assertions.assertThrows(TaskException.class, () ->
-                Task.create(project, "Task Title", -1, "John Doe", TaskStatus.ACTIVE, fixedClock));
+        Task task = Task.create(
+                project,
+                "Deploy app",
+                4,
+                "alice",
+                TaskStatus.IN_PROGRESS,
+                fixedClock
+        );
 
-        Assertions.assertThrows(TaskException.class, () ->
-                Task.create(project, "Task Title", 5, "John Doe", null, fixedClock));
-
-        Assertions.assertThrows(TaskException.class, () ->
-                Task.create(project, "Task Title", 5, "John Doe", TaskStatus.ACTIVE, null));
+        Assertions.assertNull(task.getFinishedAt());
     }
 }

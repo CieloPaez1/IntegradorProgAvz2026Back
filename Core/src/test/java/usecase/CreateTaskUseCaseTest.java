@@ -1,17 +1,20 @@
 package usecase;
 
-import exception.TaskUseCaseException;
-import model.Project;
-import model.ProjectStatus;
-import model.Task;
-import model.TaskStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import output.ProjectOutPut;
-import output.TaskOutPut;
+import project.enums.ProjectStatus;
+import project.model.Project;
+import project.output.ProjectOutPut;
+import exception.BusinessRuleViolationException;
+import exception.DuplicateResourceException;
+import exception.ResourceNotFoundException;
+import task.enums.TaskStatus;
+import task.model.Task;
+import task.output.TaskOutPut;
+import task.usecase.CreateTaskUseCase;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -26,102 +29,143 @@ import static org.mockito.Mockito.when;
 public class CreateTaskUseCaseTest {
 
     @Mock
-    TaskOutPut taskOutPut;
+    private TaskOutPut taskOutPut;
 
     @Mock
-    ProjectOutPut projectOutPut;
+    private ProjectOutPut projectOutPut;
 
-    Clock fixedClock = Clock.fixed(
-            LocalDateTime.of(2025, 11, 11, 10, 0).toInstant(ZoneOffset.UTC),
+    private final Clock fixedClock = Clock.fixed(
+            LocalDateTime.now().plusMonths(1)
+                    .toInstant(ZoneOffset.UTC),
             ZoneOffset.UTC
     );
 
-    @Test
-    public void createTaskSuccess() {
-        Project project = Project.create("Website Redesign",
-                LocalDate.of(2025, 10, 1),
-                LocalDate.of(2025, 12, 1),
+    private Project buildActiveProject() {
+        return Project.create(
+                "Website Redesign",
+                LocalDate.now(),
+                LocalDate.now().plusMonths(3),
                 ProjectStatus.ACTIVE,
-                "Redesign website");
-
-        when(projectOutPut.existsById(project.getId())).thenReturn(true);
-        when(projectOutPut.findById(project.getId())).thenReturn(Optional.of(project));
-        when(taskOutPut.validateTitle("Design Homepage")).thenReturn(false);
-        when(taskOutPut.saveTask(any(Task.class))).thenReturn(true);
-
-        CreateTaskUseCase useCase = new CreateTaskUseCase(taskOutPut, projectOutPut, clock);
-        boolean result = useCase.createTask(project, "Design Homepage", 5, "John Doe", TaskStatus.ACTIVE, fixedClock);
-
-        Assertions.assertTrue(result);
+                null
+        );
     }
 
-    @Test
-    public void createTaskProjectDoesNotExist() {
-        Project project = Project.create("Website Redesign",
-                LocalDate.of(2025, 10, 1),
-                LocalDate.of(2025, 12, 1),
-                ProjectStatus.ACTIVE,
-                "Redesign website");
-
-        when(projectOutPut.existsById(project.getId())).thenReturn(false);
-
-        CreateTaskUseCase useCase = new CreateTaskUseCase(taskOutPut, projectOutPut, clock);
-
-        Assertions.assertThrows(TaskUseCaseException.class,
-                () -> useCase.createTask(project, "Design Homepage", 5, "John Doe", TaskStatus.ACTIVE, fixedClock));
-    }
-
-    @Test
-    public void createTaskTitleExists() {
-        Project project = Project.create("Website Redesign",
-                LocalDate.of(2025, 10, 1),
-                LocalDate.of(2025, 12, 1),
-                ProjectStatus.ACTIVE,
-                "Redesign website");
-
-        when(projectOutPut.existsById(project.getId())).thenReturn(true);
-        when(projectOutPut.findById(project.getId())).thenReturn(Optional.of(project));
-        when(taskOutPut.validateTitle("Design Homepage")).thenReturn(true);
-
-        CreateTaskUseCase useCase = new CreateTaskUseCase(taskOutPut, projectOutPut, clock);
-
-        Assertions.assertThrows(TaskUseCaseException.class,
-                () -> useCase.createTask(project, "Design Homepage", 5, "John Doe", TaskStatus.ACTIVE, fixedClock));
-    }
-
-    @Test
-    public void createTaskClosedProject() {
-        Project project = Project.create("Website Redesign",
-                LocalDate.of(2025, 10, 1),
-                LocalDate.of(2025, 12, 1),
+    private Project buildClosedProject() {
+        return Project.create(
+                "Website Redesign",
+                LocalDate.now(),
+                LocalDate.now().plusMonths(3),
                 ProjectStatus.CLOSED,
-                "Redesign website");
-
-        when(projectOutPut.existsById(project.getId())).thenReturn(true);
-        when(projectOutPut.findById(project.getId())).thenReturn(Optional.of(project));
-
-        CreateTaskUseCase useCase = new CreateTaskUseCase(taskOutPut, projectOutPut, clock);
-
-        Assertions.assertThrows(TaskUseCaseException.class,
-                () -> useCase.createTask(project, "Design Homepage", 5, "John Doe", TaskStatus.ACTIVE, fixedClock));
+                null
+        );
     }
 
     @Test
-    public void createTaskSaveFails() {
-        Project project = Project.create("Website Redesign",
-                LocalDate.of(2025, 10, 1),
-                LocalDate.of(2025, 12, 1),
-                ProjectStatus.ACTIVE,
-                "Redesign website");
+    void shouldCreateTaskSuccessfully() {
 
-        when(projectOutPut.existsById(project.getId())).thenReturn(true);
-        when(projectOutPut.findById(project.getId())).thenReturn(Optional.of(project));
-        when(taskOutPut.validateTitle("Design Homepage")).thenReturn(false);
-        when(taskOutPut.saveTask(any(Task.class))).thenReturn(false);
+        Project project = buildActiveProject();
 
-        CreateTaskUseCase useCase = new CreateTaskUseCase(taskOutPut, projectOutPut, clock);
+        when(projectOutPut.findById(project.getId()))
+                .thenReturn(Optional.of(project));
 
-        Assertions.assertThrows(TaskUseCaseException.class,
-                () -> useCase.createTask(project, "Design Homepage", 5, "John Doe", TaskStatus.ACTIVE, fixedClock));
+        when(taskOutPut.existsByTitle("Design Homepage"))
+                .thenReturn(false);
+
+        when(taskOutPut.save(any(Task.class)))
+                .thenReturn(true);
+
+        CreateTaskUseCase useCase =
+                new CreateTaskUseCase(taskOutPut, projectOutPut, fixedClock);
+
+        Task result = useCase.createTask(
+                project.getId(),
+                "Design Homepage",
+                5,
+                "John Doe",
+                TaskStatus.TODO
+        );
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("Design Homepage", result.getTitle());
+        Assertions.assertEquals(TaskStatus.TODO, result.getStatus());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenProjectDoesNotExist() {
+
+        when(projectOutPut.findById(1L))
+                .thenReturn(Optional.empty());
+
+        CreateTaskUseCase useCase =
+                new CreateTaskUseCase(taskOutPut, projectOutPut, fixedClock);
+
+        Assertions.assertThrows(
+                ResourceNotFoundException.class,
+                () -> useCase.createTask(
+                        1L, "Task", 5, "John", TaskStatus.TODO)
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenProjectIsClosed() {
+
+        Project project = buildClosedProject();
+
+        when(projectOutPut.findById(project.getId()))
+                .thenReturn(Optional.of(project));
+
+        CreateTaskUseCase useCase =
+                new CreateTaskUseCase(taskOutPut, projectOutPut, fixedClock);
+
+        Assertions.assertThrows(
+                BusinessRuleViolationException.class,
+                () -> useCase.createTask(
+                        project.getId(), "Task", 5, "John", TaskStatus.TODO)
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenTaskTitleAlreadyExists() {
+
+        Project project = buildActiveProject();
+
+        when(projectOutPut.findById(project.getId()))
+                .thenReturn(Optional.of(project));
+
+        when(taskOutPut.existsByTitle("Task"))
+                .thenReturn(true);
+
+        CreateTaskUseCase useCase =
+                new CreateTaskUseCase(taskOutPut, projectOutPut, fixedClock);
+
+        Assertions.assertThrows(
+                DuplicateResourceException.class,
+                () -> useCase.createTask(
+                        project.getId(), "Task", 5, "John", TaskStatus.TODO)
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenSaveFails() {
+
+        Project project = buildActiveProject();
+
+        when(projectOutPut.findById(project.getId()))
+                .thenReturn(Optional.of(project));
+
+        when(taskOutPut.existsByTitle("Task"))
+                .thenReturn(false);
+
+        when(taskOutPut.save(any(Task.class)))
+                .thenReturn(false);
+
+        CreateTaskUseCase useCase =
+                new CreateTaskUseCase(taskOutPut, projectOutPut, fixedClock);
+
+        Assertions.assertThrows(
+                BusinessRuleViolationException.class,
+                () -> useCase.createTask(
+                        project.getId(), "Task", 5, "John", TaskStatus.TODO)
+        );
     }
 }

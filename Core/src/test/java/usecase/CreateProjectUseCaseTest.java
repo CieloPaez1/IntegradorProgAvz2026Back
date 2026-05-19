@@ -1,15 +1,16 @@
 package usecase;
 
-import exception.ProjectUseCaseException;
-import model.Project;
-import model.ProjectStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import output.ProjectOutPut;
-import usecase.CreateProjectUseCase;
+import project.enums.ProjectStatus;
+import project.model.Project;
+import project.output.ProjectOutPut;
+import exception.DuplicateResourceException;
+import exception.ValidationException;
+import project.usecase.CreateProjectUseCase;
 
 import java.time.LocalDate;
 
@@ -19,22 +20,31 @@ import static org.mockito.Mockito.when;
 public class CreateProjectUseCaseTest {
 
     @Mock
-    ProjectOutPut projectOutPut;
+    private ProjectOutPut projectOutput;
+
+    private Project buildProject() {
+        return Project.create(
+                "Website Redesign",
+                LocalDate.now(),
+                LocalDate.now().plusMonths(3),
+                ProjectStatus.ACTIVE,
+                null
+        );
+    }
 
     @Test
-    public void createProjectSuccess() {
-        Project project = Project.create(
-                "Website Redesign",
-                LocalDate.of(2025, 10, 1),
-                LocalDate.of(2025, 12, 1),
-                ProjectStatus.ACTIVE,
-                "Redesign corporate website"
-        );
+    void shouldCreateProjectSuccessfully() {
 
-        when(projectOutPut.existsByName(project.getName())).thenReturn(false);
-        when(projectOutPut.save(project)).thenReturn(true);
+        Project project = buildProject();
 
-        CreateProjectUseCase useCase = new CreateProjectUseCase(projectOutPut);
+        when(projectOutput.existsByName(project.getName()))
+                .thenReturn(false);
+
+        when(projectOutput.save(project))
+                .thenReturn(true);
+
+        CreateProjectUseCase useCase =
+                new CreateProjectUseCase(projectOutput);
 
         Project result = useCase.createProject(project);
 
@@ -43,37 +53,39 @@ public class CreateProjectUseCaseTest {
     }
 
     @Test
-    public void createProjectNameExists() {
-        Project project = Project.create(
-                "Website Redesign",
-                LocalDate.of(2025, 10, 1),
-                LocalDate.of(2025, 12, 1),
-                ProjectStatus.ACTIVE,
-                "Redesign corporate website"
+    void shouldThrowExceptionWhenProjectNameAlreadyExists() {
+
+        Project project = buildProject();
+
+        when(projectOutput.existsByName(project.getName()))
+                .thenReturn(true);
+
+        CreateProjectUseCase useCase =
+                new CreateProjectUseCase(projectOutput);
+
+        Assertions.assertThrows(
+                DuplicateResourceException.class,
+                () -> useCase.createProject(project)
         );
-
-        when(projectOutPut.existsByName(project.getName())).thenReturn(true);
-
-        CreateProjectUseCase useCase = new CreateProjectUseCase(projectOutPut);
-
-        Assertions.assertThrows(ProjectUseCaseException.class, () -> useCase.createProject(project));
     }
 
     @Test
-    public void createProjectSaveFails() {
-        Project project = Project.create(
-                "Website Redesign",
-                LocalDate.of(2025, 10, 1),
-                LocalDate.of(2025, 12, 1),
-                ProjectStatus.ACTIVE,
-                "Redesign corporate website"
+    void shouldThrowExceptionWhenProjectCannotBeSaved() {
+
+        Project project = buildProject();
+
+        when(projectOutput.existsByName(project.getName()))
+                .thenReturn(false);
+
+        when(projectOutput.save(project))
+                .thenReturn(false);
+
+        CreateProjectUseCase useCase =
+                new CreateProjectUseCase(projectOutput);
+
+        Assertions.assertThrows(
+                ValidationException.class,
+                () -> useCase.createProject(project)
         );
-
-        when(projectOutPut.existsByName(project.getName())).thenReturn(false);
-        when(projectOutPut.save(project)).thenReturn(false);
-
-        CreateProjectUseCase useCase = new CreateProjectUseCase(projectOutPut);
-
-        Assertions.assertThrows(ProjectUseCaseException.class, () -> useCase.createProject(project));
     }
 }
