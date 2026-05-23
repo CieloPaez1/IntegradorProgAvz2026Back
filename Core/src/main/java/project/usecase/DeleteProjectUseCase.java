@@ -24,12 +24,12 @@ public class DeleteProjectUseCase implements DeleteProjectInput {
 
         projectOutPut.findById(projectId)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Project not found")
+                        new ResourceNotFoundException("Proyecto no encontrado")
                 );
 
         if (taskOutPut.countTasksByProjectId(projectId) > 0) {
             throw new BusinessRuleViolationException(
-                    "Cannot delete project with tasks"
+                    "No se puede eliminar el proyecto con tareas"
             );
         }
 

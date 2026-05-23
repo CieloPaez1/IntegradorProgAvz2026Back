@@ -18,13 +18,13 @@ public class CreateProjectUseCase implements CreateProjectInput {
     public Project createProject(Project project) {
 
         if (projectOutput.existsByName(project.getName())) {
-            throw new DuplicateResourceException("Project name already exists");
+            throw new DuplicateResourceException("El nombre del proyecto ya existe");
         }
 
         Boolean saved = projectOutput.save(project);
 
         if (saved == null || !saved) {
-            throw new ValidationException("Failed to save project");
+            throw new ValidationException("No se pudo guardar el proyecto.");
         }
 
         return project;

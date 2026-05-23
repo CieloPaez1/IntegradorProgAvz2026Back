@@ -49,27 +49,27 @@ public class Project {
             ProjectStatus status
     ) {
         if (name == null || name.isBlank()) {
-            throw new ValidationException("Project name cannot be null or blank");
+            throw new ValidationException("El nombre del proyecto no puede ser nulo ni estar en blanco.");
         }
 
         if (startDate == null) {
-            throw new ValidationException("Start date cannot be null");
+            throw new ValidationException("La fecha de inicio no puede ser nula.");
         }
 
         if (endDate == null) {
-            throw new ValidationException("End date cannot be null");
+            throw new ValidationException("La fecha de finalización no puede ser nula.");
         }
 
         if (endDate.isBefore(startDate)) {
-            throw new ValidationException("End date cannot be before start date");
+            throw new ValidationException("La fecha de finalización no puede ser anterior a la fecha de inicio.");
         }
 
         if (endDate.isBefore(LocalDate.now())) {
-            throw new ValidationException("End date cannot be before today");
+            throw new ValidationException("La fecha de finalización no puede ser anterior a hoy.");
         }
 
         if (status == null) {
-            throw new ValidationException("Project status cannot be null");
+            throw new ValidationException("El estado del proyecto no puede ser nulo.");
         }
     }
 
