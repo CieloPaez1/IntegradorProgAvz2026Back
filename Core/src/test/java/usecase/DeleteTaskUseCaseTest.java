@@ -1,123 +1,147 @@
 package usecase;
 
-import exception.TaskUseCaseException;
-import model.Project;
-import model.ProjectStatus;
-import model.Task;
-import model.TaskStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import output.TaskOutPut;
+import project.enums.ProjectStatus;
+import project.model.Project;
+import exception.BusinessRuleViolationException;
+import exception.ResourceNotFoundException;
+import task.enums.TaskStatus;
+import task.model.Task;
+import task.output.TaskOutPut;
+import task.usecase.DeleteTaskUseCase;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class DeleteTaskUseCaseTest {
 
     @Mock
-    TaskOutPut taskOutPut;
+    private TaskOutPut taskOutPut;
 
-    @Test
-    public void deleteTaskSuccess() {
-        Long projectId = 1L;
-        Long taskId = 10L;
+    private final Clock fixedClock = Clock.fixed(
+            LocalDateTime.now().plusMonths(1)
+                    .toInstant(ZoneOffset.UTC),
+            ZoneOffset.UTC
+    );
 
-        Project project = Project.create("Project A",
-                LocalDate.of(2025, 10, 1),
-                LocalDate.of(2025, 12, 1),
+    private Project buildProject(String name) {
+        return Project.create(
+                name,
+                LocalDate.now(),
+                LocalDate.now().plusMonths(3),
                 ProjectStatus.ACTIVE,
-                "Desc");
-
-        Clock clock = Clock.fixed(LocalDateTime.of(2025, 11, 11, 10, 0)
-                .toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
-
-        Task task = Task.create(project, "Task A", 5, "Alice", TaskStatus.ACTIVE, clock);
-
-        when(taskOutPut.findTaskById(taskId)).thenReturn(task);
-        when(taskOutPut.deleteTaskById(taskId)).thenReturn(true);
-
-        DeleteTaskUseCase deleteTaskUseCase = new DeleteTaskUseCase(taskOutPut);
-
-        boolean resultado = deleteTaskUseCase.deleteTask(projectId, taskId);
-
-        Assertions.assertTrue(resultado);
-        verify(taskOutPut).deleteTaskById(taskId);
+                null
+        );
     }
 
     @Test
-    public void deleteTaskNotExists() {
+    void shouldDeleteTaskSuccessfully() {
+
         Long projectId = 1L;
         Long taskId = 10L;
 
-        when(taskOutPut.findTaskById(taskId)).thenReturn(null);
+        Project project = buildProject("Project A");
 
-        DeleteTaskUseCase deleteTaskUseCase = new DeleteTaskUseCase(taskOutPut);
+        Task task = Task.create(
+                project,
+                "Task A",
+                5,
+                "Alice",
+                TaskStatus.TODO,
+                fixedClock
+        );
+        task.getProject().setId(1L);
 
-        Assertions.assertThrows(TaskUseCaseException.class, () ->
-                deleteTaskUseCase.deleteTask(projectId, taskId));
+        when(taskOutPut.findById(taskId)).thenReturn(task);
+        when(taskOutPut.deleteById(taskId)).thenReturn(true);
+
+        DeleteTaskUseCase useCase = new DeleteTaskUseCase(taskOutPut);
+
+        Assertions.assertDoesNotThrow(
+                () -> useCase.deleteTask(projectId, taskId)
+        );
     }
 
     @Test
-    public void deleteTaskWrongProject() {
+    void shouldThrowExceptionWhenTaskDoesNotExist() {
+
         Long projectId = 1L;
         Long taskId = 10L;
 
-        Project project = Project.create("Project A",
-                LocalDate.of(2025, 10, 1),
-                LocalDate.of(2025, 12, 1),
-                ProjectStatus.ACTIVE,
-                "Desc");
+        when(taskOutPut.findById(taskId)).thenReturn(null);
 
-        Project otherProject = Project.create("Project B",
-                LocalDate.of(2025, 10, 1),
-                LocalDate.of(2025, 12, 1),
-                ProjectStatus.ACTIVE,
-                "Desc");
+        DeleteTaskUseCase useCase = new DeleteTaskUseCase(taskOutPut);
 
-        Clock clock = Clock.fixed(LocalDateTime.of(2025, 11, 11, 10, 0)
-                .toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
-
-        Task task = Task.create(otherProject, "Task A", 5, "Alice", TaskStatus.ACTIVE, clock);
-
-        when(taskOutPut.findTaskById(taskId)).thenReturn(task);
-
-        DeleteTaskUseCase deleteTaskUseCase = new DeleteTaskUseCase(taskOutPut);
-
-        Assertions.assertThrows(TaskUseCaseException.class, () ->
-                deleteTaskUseCase.deleteTask(projectId, taskId));
+        Assertions.assertThrows(
+                ResourceNotFoundException.class,
+                () -> useCase.deleteTask(projectId, taskId)
+        );
     }
 
     @Test
-    public void deleteTaskFailure() {
+    void shouldThrowExceptionWhenTaskDoesNotBelongToProject() {
+
+
         Long projectId = 1L;
         Long taskId = 10L;
 
-        Project project = Project.create("Project A",
-                LocalDate.of(2025, 10, 1),
-                LocalDate.of(2025, 12, 1),
-                ProjectStatus.ACTIVE,
-                "Desc");
+        Project otherProject = buildProject("Project B");
+        otherProject.setId(2L);
 
-        Clock clock = Clock.fixed(LocalDateTime.of(2025, 11, 11, 10, 0)
-                .toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
+        Task task = Task.create(
+                otherProject,
+                "Task A",
+                5,
+                "Alice",
+                TaskStatus.TODO,
+                fixedClock
+        );
 
-        Task task = Task.create(project, "Task A", 5, "Alice", TaskStatus.ACTIVE, clock);
+        when(taskOutPut.findById(taskId)).thenReturn(task);
 
-        when(taskOutPut.findTaskById(taskId)).thenReturn(task);
-        when(taskOutPut.deleteTaskById(taskId)).thenReturn(false);
+        DeleteTaskUseCase useCase = new DeleteTaskUseCase(taskOutPut);
 
-        DeleteTaskUseCase deleteTaskUseCase = new DeleteTaskUseCase(taskOutPut);
+        Assertions.assertThrows(
+                BusinessRuleViolationException.class,
+                () -> useCase.deleteTask(projectId, taskId)
+        );
+    }
 
-        Assertions.assertThrows(TaskUseCaseException.class, () ->
-                deleteTaskUseCase.deleteTask(projectId, taskId));
+    @Test
+    void shouldThrowExceptionWhenDeleteFails() {
+
+        Long projectId = 1L;
+        Long taskId = 10L;
+
+        Project project = buildProject("Project A");
+
+        Task task = Task.create(
+                project,
+                "Task A",
+                5,
+                "Alice",
+                TaskStatus.TODO,
+                fixedClock
+        );
+        task.getProject().setId(1L);
+
+        when(taskOutPut.findById(taskId)).thenReturn(task);
+        when(taskOutPut.deleteById(taskId)).thenReturn(false);
+
+        DeleteTaskUseCase useCase = new DeleteTaskUseCase(taskOutPut);
+
+        Assertions.assertThrows(
+                BusinessRuleViolationException.class,
+                () -> useCase.deleteTask(projectId, taskId)
+        );
     }
 }

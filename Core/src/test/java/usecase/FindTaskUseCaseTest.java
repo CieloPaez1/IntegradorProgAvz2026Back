@@ -1,23 +1,22 @@
 package usecase;
 
-import exception.TaskUseCaseException;
-import model.Project;
-import model.Task;
-import model.TaskStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import output.TaskOutPut;
-import usecase.FindTaskUseCase;
+import project.enums.ProjectStatus;
+import project.model.Project;
+import task.enums.TaskStatus;
+import task.model.Task;
+import task.output.TaskOutPut;
+import task.usecase.FindTaskUseCase;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 
@@ -25,24 +24,41 @@ import static org.mockito.Mockito.when;
 public class FindTaskUseCaseTest {
 
     @Mock
-    TaskOutPut taskOutPut;
+    private TaskOutPut taskOutPut;
 
-    Clock fixedClock = Clock.fixed(
-            LocalDateTime.of(2025, 11, 11, 10, 0).toInstant(ZoneOffset.UTC),
+    private final Clock fixedClock = Clock.fixed(
+            LocalDateTime.now().plusMonths(1)
+                    .toInstant(ZoneOffset.UTC),
             ZoneOffset.UTC
     );
 
-    @Test
-    public void findTasksSuccess() {
-        Project project = Project.create("Website", LocalDate.now(), LocalDate.now().plusDays(10), null, "desc");
-        Task task1 = Task.create(project, "Task 1", 5, "Alice", TaskStatus.ACTIVE, fixedClock);
-        Task task2 = Task.create(project, "Task 2", 8, "Bob", TaskStatus.ACTIVE, fixedClock);
+    private Project buildProject() {
+        return Project.create(
+                "Website",
+                LocalDate.now(),
+                LocalDate.now().plusMonths(3),
+                ProjectStatus.ACTIVE,
+                null
+        );
+    }
 
-        when(taskOutPut.findTasks(project.getId(), 5, null)).thenReturn(List.of(task1, task2));
+    @Test
+    void shouldFindTasksSuccessfully() {
+
+        Project project = buildProject();
+
+        Task task1 = Task.create(
+                project, "Task 1", 5, "Alice", TaskStatus.TODO, fixedClock);
+
+        Task task2 = Task.create(
+                project, "Task 2", 8, "Bob", TaskStatus.IN_PROGRESS, fixedClock);
+
+        when(taskOutPut.findTasks(5, null))
+                .thenReturn(List.of(task1, task2));
 
         FindTaskUseCase useCase = new FindTaskUseCase(taskOutPut);
 
-        List<Task> result = useCase.findTasks(project.getId(), 5, null);
+        List<Task> result = useCase.findTasks(5, null);
 
         Assertions.assertEquals(2, result.size());
         Assertions.assertTrue(result.contains(task1));
@@ -50,66 +66,53 @@ public class FindTaskUseCaseTest {
     }
 
     @Test
-    public void findTasksNoProjectId() {
+    void shouldReturnEmptyListWhenNoTasksFound() {
+
+        when(taskOutPut.findTasks(10, "Alice"))
+                .thenReturn(List.of());
+
         FindTaskUseCase useCase = new FindTaskUseCase(taskOutPut);
 
-        Assertions.assertThrows(TaskUseCaseException.class, () ->
-                useCase.findTasks(null, 5, "Alice")
-        );
+        List<Task> result = useCase.findTasks(10, "Alice");
 
-        Assertions.assertThrows(TaskUseCaseException.class, () ->
-                useCase.findTasks(0L, 5, "Alice")
-        );
+        Assertions.assertTrue(result.isEmpty());
     }
 
     @Test
-    public void findTasksEmptyList() {
-        Project project = Project.create("Website", LocalDate.now(), LocalDate.now().plusDays(10), null, "desc");
+    void shouldFindTasksByAssignee() {
 
-        when(taskOutPut.findTasks(project.getId(), null, null)).thenReturn(List.of());
+        Project project = buildProject();
+
+        Task task = Task.create(
+                project, "Task 1", 5, "Alice", TaskStatus.TODO, fixedClock);
+
+        when(taskOutPut.findTasks(null, "Alice"))
+                .thenReturn(List.of(task));
 
         FindTaskUseCase useCase = new FindTaskUseCase(taskOutPut);
 
-        Assertions.assertThrows(TaskUseCaseException.class, () ->
-                useCase.findTasks(project.getId(), null, null)
-        );
+        List<Task> result = useCase.findTasks(null, "Alice");
+
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals("Alice", result.getFirst().getAssignee());
     }
 
     @Test
-    public void findTaskByIdSuccess() {
-        Project project = Project.create("Website", LocalDate.now(), LocalDate.now().plusDays(10), null, "desc");
-        Task task = Task.create(project, "Task 1", 5, "Alice", TaskStatus.ACTIVE, fixedClock);
+    void shouldFindTasksByMinEstimate() {
 
-        when(taskOutPut.findTaskById(10L)).thenReturn(task);
+        Project project = buildProject();
 
-        FindTaskUseCase useCase = new FindTaskUseCase(taskOutPut);
+        Task task = Task.create(
+                project, "Task 1", 10, "Bob", TaskStatus.IN_PROGRESS, fixedClock);
 
-        Task result = useCase.findTaskById(10L);
-
-        Assertions.assertEquals(task, result);
-    }
-
-    @Test
-    public void findTaskByIdNotFound() {
-        when(taskOutPut.findTaskById(99L)).thenReturn(null);
+        when(taskOutPut.findTasks(8, null))
+                .thenReturn(List.of(task));
 
         FindTaskUseCase useCase = new FindTaskUseCase(taskOutPut);
 
-        Assertions.assertThrows(TaskUseCaseException.class, () ->
-                useCase.findTaskById(99L)
-        );
-    }
+        List<Task> result = useCase.findTasks(8, null);
 
-    @Test
-    public void findTaskByIdInvalidId() {
-        FindTaskUseCase useCase = new FindTaskUseCase(taskOutPut);
-
-        Assertions.assertThrows(TaskUseCaseException.class, () ->
-                useCase.findTaskById(0L)
-        );
-
-        Assertions.assertThrows(TaskUseCaseException.class, () ->
-                useCase.findTaskById(-5L)
-        );
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals(10, result.getFirst().getEstimateHours());
     }
 }
