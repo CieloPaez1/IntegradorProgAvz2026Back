@@ -4,9 +4,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import project.input.CreateProjectInput;
 import project.input.DeleteProjectInput;
+import project.input.FindProjectInput;
 import project.output.ProjectOutPut;
 import project.usecase.CreateProjectUseCase;
 import project.usecase.DeleteProjectUseCase;
+import project.usecase.FindProjectUseCase;
 import task.input.CreateTaskInput;
 import task.input.DeleteTaskInput;
 import task.input.FindTaskInput;
@@ -55,5 +57,10 @@ public class UseCaseConfig {
     @Bean
     public FindTaskInput findTask(TaskOutPut taskOutPut) {
         return new FindTaskUseCase(taskOutPut);
+    }
+
+    @Bean
+    public FindProjectInput findProjects(ProjectOutPut projectOutPut) {
+        return new FindProjectUseCase(projectOutPut);
     }
 }

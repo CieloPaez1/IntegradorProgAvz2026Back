@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import project.model.Project;
 import project.output.ProjectOutPut;
+import java.util.List;
 
 import java.util.Optional;
 
@@ -52,5 +53,12 @@ public class ProjectRepository implements ProjectOutPut {
         if (id != null) {
             projectJpa.deleteById(id);
         }
+    }
+    @Override
+    public List<Project> findAll() {
+        return projectJpa.findAll()
+                .stream()
+                .map(ProjectMapper::entityToCore)
+                .toList();
     }
 }

@@ -6,7 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import project.input.CreateProjectInput;
 import project.input.DeleteProjectInput;
+import project.input.FindProjectInput;
 import project.model.Project;
+import java.util.List;
 
 @RestController
 @RequestMapping("/projects")
@@ -14,13 +16,25 @@ public class ProjectController {
 
     private final CreateProjectInput createProject;
     private final DeleteProjectInput deleteProject;
+    private final FindProjectInput findProjects;
 
     public ProjectController(
             CreateProjectInput createProject,
-            DeleteProjectInput deleteProject
+            DeleteProjectInput deleteProject,
+            FindProjectInput findProjects
     ) {
         this.createProject = createProject;
         this.deleteProject = deleteProject;
+        this.findProjects = findProjects;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ProjectResponseDTO>> getAllProjects() {
+        List<ProjectResponseDTO> projects = findProjects.execute()
+                .stream()
+                .map(ProjectResponseDTO::from)
+                .toList();
+        return ResponseEntity.ok(projects);
     }
 
     @PostMapping
