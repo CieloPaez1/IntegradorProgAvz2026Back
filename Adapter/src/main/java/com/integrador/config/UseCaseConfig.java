@@ -5,17 +5,21 @@ import org.springframework.context.annotation.Configuration;
 import project.input.CreateProjectInput;
 import project.input.DeleteProjectInput;
 import project.input.FindProjectInput;
+import project.input.UpdateProjectInput;
 import project.output.ProjectOutPut;
 import project.usecase.CreateProjectUseCase;
 import project.usecase.DeleteProjectUseCase;
 import project.usecase.FindProjectUseCase;
+import project.usecase.UpdateProjectUseCase;
 import task.input.CreateTaskInput;
 import task.input.DeleteTaskInput;
 import task.input.FindTaskInput;
+import task.input.UpdateTaskInput;
 import task.output.TaskOutPut;
 import task.usecase.CreateTaskUseCase;
 import task.usecase.DeleteTaskUseCase;
 import task.usecase.FindTaskUseCase;
+import task.usecase.UpdateTaskUseCase;
 
 import java.time.Clock;
 
@@ -55,8 +59,25 @@ public class UseCaseConfig {
     }
 
     @Bean
-    public FindTaskInput findTask(TaskOutPut taskOutPut) {
-        return new FindTaskUseCase(taskOutPut);
+    public UpdateProjectInput updateProject(ProjectOutPut projectOutPut) {
+        return new UpdateProjectUseCase(projectOutPut);
+    }
+
+    @Bean
+    public UpdateTaskInput updateTask(
+            TaskOutPut taskOutPut,
+            ProjectOutPut projectOutPut,
+            Clock clock
+    ) {
+        return new UpdateTaskUseCase(taskOutPut, projectOutPut, clock);
+    }
+
+    @Bean
+    public FindTaskInput findTask(
+            TaskOutPut taskOutPut,
+            ProjectOutPut projectOutPut
+    ) {
+        return new FindTaskUseCase(taskOutPut, projectOutPut);
     }
 
     @Bean

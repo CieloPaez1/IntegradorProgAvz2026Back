@@ -13,6 +13,8 @@ public interface TaskOutPut {
             String assignee
     );
 
+    List<Task> findByProjectId(Long projectId);
+
     Task findById(Long taskId);
 
     boolean deleteById(Long taskId);

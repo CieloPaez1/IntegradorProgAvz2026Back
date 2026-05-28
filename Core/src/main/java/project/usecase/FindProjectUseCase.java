@@ -1,5 +1,6 @@
 package project.usecase;
 
+import exception.ResourceNotFoundException;
 import project.input.FindProjectInput;
 import project.model.Project;
 import project.output.ProjectOutPut;
@@ -15,5 +16,13 @@ public class FindProjectUseCase implements FindProjectInput {
     @Override
     public List<Project> execute() {
         return projectOutPut.findAll();
+    }
+
+    @Override
+    public Project findById(Long projectId) {
+        return projectOutPut.findById(projectId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Proyecto no encontrado")
+                );
     }
 }

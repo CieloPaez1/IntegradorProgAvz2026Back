@@ -10,4 +10,8 @@ public interface FindTaskInput {
             Integer minEstimate,
             String assignee
     );
+
+    List<Task> findTasksByProjectId(Long projectId);
+
+    Task findById(Long projectId, Long taskId);
 }

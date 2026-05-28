@@ -52,6 +52,16 @@ public class TaskRepository implements TaskOutPut {
     }
 
     @Override
+    public List<Task> findByProjectId(Long projectId) {
+        if (projectId == null) return List.of();
+
+        return taskJpa.findByProjectId(projectId)
+                .stream()
+                .map(TaskMapper::entityToCore)
+                .toList();
+    }
+
+    @Override
     public Task findById(Long taskId) {
         if (taskId == null) return null;
 
