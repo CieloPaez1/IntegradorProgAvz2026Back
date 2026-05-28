@@ -16,6 +16,8 @@ public interface TaskJPARepository
 
     int countByProjectId(Long projectId);
 
+    List<TaskEntity> findByProjectId(Long projectId);
+
     @Query("SELECT t FROM TaskEntity t WHERE " +
             "(:minEstimate IS NULL OR t.estimateHours >= :minEstimate) AND " +
             "(:assignee IS NULL OR t.assignee = :assignee)")

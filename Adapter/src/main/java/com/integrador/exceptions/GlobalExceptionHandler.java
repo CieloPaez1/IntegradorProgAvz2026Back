@@ -1,6 +1,9 @@
 package com.integrador.exceptions;
 
 
+import exception.BusinessRuleViolationException;
+import exception.DuplicateResourceException;
+import exception.ResourceNotFoundException;
 import exception.ValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +18,25 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<String> handleNotFound(ResourceNotFoundException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ex.getMessage());
+    }
+
+    @ExceptionHandler({
+            DuplicateResourceException.class,
+            BusinessRuleViolationException.class
+    })
+    public ResponseEntity<String> handleConflict(RuntimeException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
                 .body(ex.getMessage());
     }
 }

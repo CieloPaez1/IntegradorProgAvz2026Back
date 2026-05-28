@@ -95,6 +95,19 @@ public class Project {
         return new Project(id, name, startDate, endDate, status, description);
     }
 
+    public static Project update(
+            Long id,
+            String name,
+            LocalDate startDate,
+            LocalDate endDate,
+            ProjectStatus status,
+            String description
+    ) {
+        validate(name, startDate, endDate, status);
+
+        return new Project(id, name, startDate, endDate, status, description);
+    }
+
     public void setId(Long id) {
         this.id = id;
     }

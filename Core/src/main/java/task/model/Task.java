@@ -116,6 +116,27 @@ public class Task {
                 assignee, status, createdAt, finishedAt);
     }
 
+    public static Task update(
+            Long id,
+            Project project,
+            String title,
+            Integer estimateHours,
+            String assignee,
+            TaskStatus status,
+            LocalDateTime createdAt,
+            LocalDateTime currentFinishedAt,
+            Clock clock
+    ) {
+        validate(project, title, estimateHours, status, clock);
+
+        LocalDateTime finishedAt = TaskStatus.DONE.equals(status)
+                ? currentFinishedAt != null ? currentFinishedAt : LocalDateTime.now(clock)
+                : null;
+
+        return new Task(id, project, title, estimateHours,
+                assignee, status, createdAt, finishedAt);
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
