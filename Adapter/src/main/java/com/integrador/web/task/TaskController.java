@@ -43,7 +43,8 @@ public class TaskController {
                 request.getTitle(),
                 request.getEstimateHours(),
                 request.getAssignee(),
-                request.getStatus()
+                request.getStatus(),
+                request.getDueDate()
         );
 
         return ResponseEntity
@@ -84,7 +85,8 @@ public class TaskController {
                 request.getTitle(),
                 request.getEstimateHours(),
                 request.getAssignee(),
-                request.getStatus()
+                request.getStatus(),
+                request.getDueDate()
         );
 
         return ResponseEntity.ok(TaskResponseDTO.from(result));

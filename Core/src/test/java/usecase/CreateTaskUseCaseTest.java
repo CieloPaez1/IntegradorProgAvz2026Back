@@ -82,7 +82,8 @@ public class CreateTaskUseCaseTest {
                 "Design Homepage",
                 5,
                 "John Doe",
-                TaskStatus.TODO
+                TaskStatus.TODO,
+                null
         );
 
         Assertions.assertNotNull(result);
@@ -102,7 +103,7 @@ public class CreateTaskUseCaseTest {
         Assertions.assertThrows(
                 ResourceNotFoundException.class,
                 () -> useCase.createTask(
-                        1L, "Task", 5, "John", TaskStatus.TODO)
+                        1L, "Task", 5, "John", TaskStatus.TODO, null)
         );
     }
 
@@ -120,7 +121,7 @@ public class CreateTaskUseCaseTest {
         Assertions.assertThrows(
                 BusinessRuleViolationException.class,
                 () -> useCase.createTask(
-                        project.getId(), "Task", 5, "John", TaskStatus.TODO)
+                        project.getId(), "Task", 5, "John", TaskStatus.TODO, null)
         );
     }
 
@@ -141,7 +142,7 @@ public class CreateTaskUseCaseTest {
         Assertions.assertThrows(
                 DuplicateResourceException.class,
                 () -> useCase.createTask(
-                        project.getId(), "Task", 5, "John", TaskStatus.TODO)
+                        project.getId(), "Task", 5, "John", TaskStatus.TODO, null)
         );
     }
 
@@ -165,7 +166,7 @@ public class CreateTaskUseCaseTest {
         Assertions.assertThrows(
                 BusinessRuleViolationException.class,
                 () -> useCase.createTask(
-                        project.getId(), "Task", 5, "John", TaskStatus.TODO)
+                        project.getId(), "Task", 5, "John", TaskStatus.TODO, null)
         );
     }
 }

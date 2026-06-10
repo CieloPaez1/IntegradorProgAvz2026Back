@@ -42,6 +42,7 @@ public class TaskTest {
                 5,
                 "John Doe",
                 TaskStatus.TODO,
+                null,
                 fixedClock
         );
 
@@ -66,6 +67,7 @@ public class TaskTest {
                         5,
                         "John Doe",
                         TaskStatus.TODO,
+                        null,
                         fixedClock
                 )
         );
@@ -84,6 +86,7 @@ public class TaskTest {
                         5,
                         "John Doe",
                         TaskStatus.TODO,
+                        null,
                         fixedClock
                 )
         );
@@ -102,6 +105,7 @@ public class TaskTest {
                         0,
                         "John Doe",
                         TaskStatus.TODO,
+                        null,
                         fixedClock
                 )
         );
@@ -120,6 +124,7 @@ public class TaskTest {
                 4,
                 "alice",
                 TaskStatus.DONE,
+                null,
                 fixedClock
         );
 
@@ -138,6 +143,7 @@ public class TaskTest {
                 4,
                 "alice",
                 TaskStatus.IN_PROGRESS,
+                null,
                 fixedClock
         );
 

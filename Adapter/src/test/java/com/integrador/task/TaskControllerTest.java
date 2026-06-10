@@ -61,6 +61,7 @@ public class TaskControllerTest {
                 5,
                 "Carlos",
                 TaskStatus.TODO,
+                null,
                 Clock.systemDefaultZone()
         );
     }
@@ -81,7 +82,8 @@ public class TaskControllerTest {
                 "Login",
                 5,
                 "Carlos",
-                TaskStatus.TODO
+                TaskStatus.TODO,
+                null
         )).thenReturn(task);
 
         ResponseEntity<TaskResponseDTO> response =

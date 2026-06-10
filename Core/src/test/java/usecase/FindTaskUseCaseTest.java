@@ -48,10 +48,10 @@ public class FindTaskUseCaseTest {
         Project project = buildProject();
 
         Task task1 = Task.create(
-                project, "Task 1", 5, "Alice", TaskStatus.TODO, fixedClock);
+                project, "Task 1", 5, "Alice", TaskStatus.TODO, null, fixedClock);
 
         Task task2 = Task.create(
-                project, "Task 2", 8, "Bob", TaskStatus.IN_PROGRESS, fixedClock);
+                project, "Task 2", 8, "Bob", TaskStatus.IN_PROGRESS, null, fixedClock);
 
         when(taskOutPut.findTasks(5, null))
                 .thenReturn(List.of(task1, task2));
@@ -84,7 +84,7 @@ public class FindTaskUseCaseTest {
         Project project = buildProject();
 
         Task task = Task.create(
-                project, "Task 1", 5, "Alice", TaskStatus.TODO, fixedClock);
+                project, "Task 1", 5, "Alice", TaskStatus.TODO, null, fixedClock);
 
         when(taskOutPut.findTasks(null, "Alice"))
                 .thenReturn(List.of(task));
@@ -103,7 +103,7 @@ public class FindTaskUseCaseTest {
         Project project = buildProject();
 
         Task task = Task.create(
-                project, "Task 1", 10, "Bob", TaskStatus.IN_PROGRESS, fixedClock);
+                project, "Task 1", 10, "Bob", TaskStatus.IN_PROGRESS, null, fixedClock);
 
         when(taskOutPut.findTasks(8, null))
                 .thenReturn(List.of(task));

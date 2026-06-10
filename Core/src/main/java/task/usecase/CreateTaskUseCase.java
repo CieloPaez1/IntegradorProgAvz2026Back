@@ -35,7 +35,8 @@ public class CreateTaskUseCase implements CreateTaskInput {
             String title,
             Integer estimateHours,
             String assignee,
-            TaskStatus status
+            TaskStatus status,
+            java.time.LocalDateTime dueDate
     ) {
         Project project = projectOutput.findById(projectId)
                 .orElseThrow(() ->
@@ -53,7 +54,7 @@ public class CreateTaskUseCase implements CreateTaskInput {
         }
 
         Task task = Task.create(project, title, estimateHours,
-                assignee, status, clock);
+                assignee, status, dueDate, clock);
 
         boolean saved = taskOutput.save(task);
 

@@ -57,6 +57,7 @@ public class DeleteTaskUseCaseTest {
                 5,
                 "Alice",
                 TaskStatus.TODO,
+                null,
                 fixedClock
         );
         task.getProject().setId(1L);
@@ -103,6 +104,7 @@ public class DeleteTaskUseCaseTest {
                 5,
                 "Alice",
                 TaskStatus.TODO,
+                null,
                 fixedClock
         );
 
@@ -130,6 +132,7 @@ public class DeleteTaskUseCaseTest {
                 5,
                 "Alice",
                 TaskStatus.TODO,
+                null,
                 fixedClock
         );
         task.getProject().setId(1L);

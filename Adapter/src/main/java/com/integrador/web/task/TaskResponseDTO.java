@@ -16,6 +16,7 @@ public class TaskResponseDTO {
     private TaskStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime finishedAt;
+    private LocalDateTime dueDate;
 
     public TaskResponseDTO() {}
 
@@ -29,6 +30,7 @@ public class TaskResponseDTO {
         dto.status = task.getStatus();
         dto.createdAt = task.getCreatedAt();
         dto.finishedAt = task.getFinishedAt();
+        dto.dueDate = task.getDueDate();
         return dto;
     }
 
@@ -40,4 +42,5 @@ public class TaskResponseDTO {
     public TaskStatus getStatus() { return status; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getFinishedAt() { return finishedAt; }
+    public LocalDateTime getDueDate() { return dueDate; }
 }

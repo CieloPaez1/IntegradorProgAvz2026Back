@@ -11,6 +11,7 @@ public interface UpdateTaskInput {
             String title,
             Integer estimateHours,
             String assignee,
-            TaskStatus status
+            TaskStatus status,
+            java.time.LocalDateTime dueDate
     );
 }

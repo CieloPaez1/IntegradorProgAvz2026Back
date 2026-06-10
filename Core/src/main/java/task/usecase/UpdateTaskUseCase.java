@@ -35,7 +35,8 @@ public class UpdateTaskUseCase implements UpdateTaskInput {
             String title,
             Integer estimateHours,
             String assignee,
-            TaskStatus status
+            TaskStatus status,
+            java.time.LocalDateTime dueDate
     ) {
         Project project = projectOutput.findById(projectId)
                 .orElseThrow(() ->
@@ -65,6 +66,7 @@ public class UpdateTaskUseCase implements UpdateTaskInput {
                 estimateHours,
                 assignee,
                 status,
+                dueDate,
                 current.getCreatedAt(),
                 current.getFinishedAt(),
                 clock

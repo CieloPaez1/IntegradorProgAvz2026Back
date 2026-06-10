@@ -54,6 +54,7 @@ public class TaskRepositoryTest {
                 5,
                 "Carlos",
                 TaskStatus.TODO,
+                null,
                 Clock.systemDefaultZone()
         );
     }

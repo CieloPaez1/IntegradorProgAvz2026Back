@@ -17,7 +17,8 @@ public class TaskMapper {
                 task.getAssignee(),
                 task.getStatus(),
                 task.getCreatedAt(),
-                task.getFinishedAt()
+                task.getFinishedAt(),
+                task.getDueDate()
         );
     }
 
@@ -32,7 +33,8 @@ public class TaskMapper {
                 entity.getAssignee(),
                 entity.getStatus(),
                 entity.getCreatedAt(),
-                entity.getFinishedAt()
+                entity.getFinishedAt(),
+                entity.getDueDate()
         );
     }
 }

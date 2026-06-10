@@ -18,6 +18,7 @@ public class Task {
     private final TaskStatus status;
     private final LocalDateTime createdAt;
     private final LocalDateTime finishedAt;
+    private final LocalDateTime dueDate;
 
     private Task(
             Long id,
@@ -27,7 +28,8 @@ public class Task {
             String assignee,
             TaskStatus status,
             LocalDateTime createdAt,
-            LocalDateTime finishedAt
+            LocalDateTime finishedAt,
+            LocalDateTime dueDate
     ) {
         this.id = id;
         this.project = project;
@@ -37,6 +39,7 @@ public class Task {
         this.status = status;
         this.createdAt = createdAt;
         this.finishedAt = finishedAt;
+        this.dueDate = dueDate;
     }
 
     public static Task create(
@@ -45,6 +48,7 @@ public class Task {
             Integer estimateHours,
             String assignee,
             TaskStatus status,
+            LocalDateTime dueDate,
             Clock clock
     ) {
         validate(project, title, estimateHours, status, clock);
@@ -59,7 +63,7 @@ public class Task {
         LocalDateTime finishedAt = TaskStatus.DONE.equals(status) ? now : null;
 
         return new Task(null, project, title, estimateHours, assignee,
-                status, now, finishedAt);
+                status, now, finishedAt, dueDate);
     }
 
     private static void validate(
@@ -101,6 +105,7 @@ public class Task {
     public TaskStatus getStatus() { return status; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getFinishedAt() { return finishedAt; }
+    public LocalDateTime getDueDate() { return dueDate; }
 
     public static Task restore(
             Long id,
@@ -110,10 +115,11 @@ public class Task {
             String assignee,
             TaskStatus status,
             LocalDateTime createdAt,
-            LocalDateTime finishedAt
+            LocalDateTime finishedAt,
+            LocalDateTime dueDate
     ) {
         return new Task(id, project, title, estimateHours,
-                assignee, status, createdAt, finishedAt);
+                assignee, status, createdAt, finishedAt, dueDate);
     }
 
     public static Task update(
@@ -123,6 +129,7 @@ public class Task {
             Integer estimateHours,
             String assignee,
             TaskStatus status,
+            LocalDateTime dueDate,
             LocalDateTime createdAt,
             LocalDateTime currentFinishedAt,
             Clock clock
@@ -134,7 +141,7 @@ public class Task {
                 : null;
 
         return new Task(id, project, title, estimateHours,
-                assignee, status, createdAt, finishedAt);
+                assignee, status, createdAt, finishedAt, dueDate);
     }
 
     public void setId(Long id) {

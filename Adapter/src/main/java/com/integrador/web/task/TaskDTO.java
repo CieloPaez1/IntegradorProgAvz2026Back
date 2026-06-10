@@ -20,6 +20,8 @@ public class TaskDTO {
     @NotNull(message = "Status is required")
     private TaskStatus status;
 
+    private java.time.LocalDateTime dueDate;
+
     public TaskDTO() {}
 
     public String getTitle() { return title; }
@@ -30,4 +32,6 @@ public class TaskDTO {
     public void setAssignee(String assignee) { this.assignee = assignee; }
     public TaskStatus getStatus() { return status; }
     public void setStatus(TaskStatus status) { this.status = status; }
+    public java.time.LocalDateTime getDueDate() { return dueDate; }
+    public void setDueDate(java.time.LocalDateTime dueDate) { this.dueDate = dueDate; }
 }

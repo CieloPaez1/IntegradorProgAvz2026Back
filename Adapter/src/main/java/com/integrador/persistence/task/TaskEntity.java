@@ -35,6 +35,8 @@ public class TaskEntity {
 
     private LocalDateTime finishedAt;
 
+    private LocalDateTime dueDate;
+
     public TaskEntity() {}
 
     public TaskEntity(
@@ -45,7 +47,8 @@ public class TaskEntity {
             String assignee,
             TaskStatus status,
             LocalDateTime createdAt,
-            LocalDateTime finishedAt
+            LocalDateTime finishedAt,
+            LocalDateTime dueDate
     ) {
         this.id = id;
         this.project = project;
@@ -55,6 +58,7 @@ public class TaskEntity {
         this.status = status;
         this.createdAt = createdAt;
         this.finishedAt = finishedAt;
+        this.dueDate = dueDate;
     }
 
     public Long getId() { return id; }
@@ -75,6 +79,8 @@ public class TaskEntity {
     public void setStatus(TaskStatus status) { this.status = status; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getFinishedAt() { return finishedAt; }
+    public LocalDateTime getDueDate() { return dueDate; }
+    public void setDueDate(LocalDateTime dueDate) { this.dueDate = dueDate; }
 
 
 }
